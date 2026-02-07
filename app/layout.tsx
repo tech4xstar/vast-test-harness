@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,10 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js" async />
-      </head>
-      <body>{children}</body>
+      <body>
+        <Script
+          src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"
+          strategy="beforeInteractive"
+        />
+        {children}
+      </body>
     </html>
   );
 }
