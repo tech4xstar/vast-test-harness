@@ -1,6 +1,5 @@
 const requestBtn = document.getElementById("request-btn");
 const resetBtn = document.getElementById("reset-btn");
-const refreshBtn = document.getElementById("refresh-webhooks");
 const stage = document.getElementById("player-stage");
 const lockedState = document.getElementById("locked-state");
 const tokenInfo = document.getElementById("token-info");
@@ -8,7 +7,6 @@ const tokenExpiry = document.getElementById("token-expiry");
 const embedUrlEl = document.getElementById("embed-url");
 const requestStatus = document.getElementById("request-status");
 const configBanner = document.getElementById("config-banner");
-const webhookList = document.getElementById("webhook-list");
 
 let countdownTimer = null;
 
@@ -20,8 +18,6 @@ async function init() {
   } catch {
     /* ignore */
   }
-  loadWebhooks();
-  setInterval(loadWebhooks, 5000);
 }
 
 // --- Signed access flow -----------------------------------------------------
@@ -92,63 +88,7 @@ function setStatus(msg, isError) {
   requestStatus.classList.toggle("error", Boolean(isError));
 }
 
-// --- Webhook feed ------------------------------------------------------------
-async function loadWebhooks() {
-  try {
-    const res = await fetch("/webhooks");
-    const events = await res.json();
-    renderWebhooks(events);
-  } catch {
-    /* ignore */
-  }
-}
-
-function renderWebhooks(events) {
-  if (!events.length) {
-    webhookList.innerHTML =
-      '<li class="webhook-empty">No events received yet.</li>';
-    return;
-  }
-  webhookList.innerHTML = events
-    .map((e) => {
-      const evt = e.event || "video.status";
-      const cls =
-        evt.includes("encoded") || e.status === 4
-          ? "encoded"
-          : evt.includes("error") || e.status === 5
-          ? "error"
-          : "";
-      const when = e.receivedAt
-        ? new Date(e.receivedAt).toLocaleTimeString()
-        : "";
-      return `<li class="webhook-item">
-        <div class="evt ${cls}">${escapeHtml(evt)}</div>
-        <div class="webhook-meta">
-          ${when} &middot; status ${e.status ?? "?"}${
-        e.statusLabel ? ` (${escapeHtml(e.statusLabel)})` : ""
-      }<br/>video: ${escapeHtml(e.videoId || "—")}
-        </div>
-      </li>`;
-    })
-    .join("");
-}
-
-function escapeHtml(str) {
-  return String(str).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      }[c])
-  );
-}
-
 requestBtn.addEventListener("click", requestPlayback);
 resetBtn.addEventListener("click", resetPlayer);
-refreshBtn.addEventListener("click", loadWebhooks);
 
 init();
