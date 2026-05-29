@@ -34,7 +34,8 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 // Config probe for the frontend: tells the page which library/video to embed
 // WITHOUT ever exposing the secret token key.
 // ---------------------------------------------------------------------------
-app.get("/api/config", (_req, res) => {
+// Paths are NOT under /api/* — Vercel reserves that prefix for serverless files.
+app.get("/config", (_req, res) => {
   res.json({
     libraryId: BUNNY_LIBRARY_ID || null,
     videoId: BUNNY_VIDEO_ID || null,
@@ -49,7 +50,7 @@ app.get("/api/config", (_req, res) => {
 // SIGNED ACCESS: the "Request Video to Play" button calls this. The signed,
 // time-limited iframe URL is built server-side so the secret key never leaks.
 // ---------------------------------------------------------------------------
-app.get("/api/play-token", (req, res) => {
+app.get("/play-token", (req, res) => {
   if (!BUNNY_LIBRARY_ID || !BUNNY_TOKEN_SECURITY_KEY) {
     return res.status(500).json({
       error:
@@ -107,18 +108,24 @@ app.post("/webhook", (req, res) => {
 });
 
 // Read back recent events (used by the demo page's "Webhook log" panel).
-app.get("/api/webhooks", (_req, res) => {
+app.get("/webhooks", (_req, res) => {
   res.json(listWebhooks(50));
 });
 
-app.listen(Number(PORT), () => {
-  console.log(`\nBunny Stream POC running: http://localhost:${PORT}`);
-  console.log(`  Demo page     : http://localhost:${PORT}/`);
-  console.log(`  Webhook URL   : http://localhost:${PORT}/webhook  (POST)`);
-  console.log(`  Webhook log   : http://localhost:${PORT}/api/webhooks`);
-  if (!BUNNY_TOKEN_SECURITY_KEY) {
-    console.log(
-      "\n  WARNING: BUNNY_TOKEN_SECURITY_KEY is not set — signed playback will fail."
-    );
-  }
-});
+// Vercel runs this file as a serverless handler (see api/index.js).
+// Locally we start a normal HTTP server.
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(Number(PORT), () => {
+    console.log(`\nBunny Stream POC running: http://localhost:${PORT}`);
+    console.log(`  Demo page     : http://localhost:${PORT}/`);
+    console.log(`  Webhook URL   : http://localhost:${PORT}/webhook  (POST)`);
+    console.log(`  Webhook log   : http://localhost:${PORT}/webhooks`);
+    if (!BUNNY_TOKEN_SECURITY_KEY) {
+      console.log(
+        "\n  WARNING: BUNNY_TOKEN_SECURITY_KEY is not set — signed playback will fail."
+      );
+    }
+  });
+}

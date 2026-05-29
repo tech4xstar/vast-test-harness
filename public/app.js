@@ -14,7 +14,7 @@ let countdownTimer = null;
 
 async function init() {
   try {
-    const res = await fetch("/api/config");
+    const res = await fetch("/config");
     const cfg = await res.json();
     if (!cfg.configured) configBanner.classList.remove("hidden");
   } catch {
@@ -30,7 +30,7 @@ async function requestPlayback() {
   setStatus("Requesting signed URL from server…", false);
 
   try {
-    const res = await fetch("/api/play-token");
+    const res = await fetch("/play-token");
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Server returned ${res.status}`);
@@ -95,7 +95,7 @@ function setStatus(msg, isError) {
 // --- Webhook feed ------------------------------------------------------------
 async function loadWebhooks() {
   try {
-    const res = await fetch("/api/webhooks");
+    const res = await fetch("/webhooks");
     const events = await res.json();
     renderWebhooks(events);
   } catch {

@@ -52,7 +52,7 @@ Open http://localhost:3000 and click **Request Video to Play**.
 ```
 Browser                         This server                     Bunny iframe
    │  click "Request Video"        │                                 │
-   ├──────  GET /api/play-token ──>│                                 │
+   ├──────  GET /play-token ───────>│                                 │
    │                               │ token = SHA256_HEX(             │
    │                               │   securityKey + videoId + exp)  │
    │ <── { embedUrl, expires } ────┤                                 │
@@ -70,7 +70,7 @@ token   = SHA256_HEX(token_security_key + video_id + expiration)
 embedUrl= https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}?token=...&expires=...
 ```
 
-Implemented in [`src/bunny.js`](src/bunny.js); served by `GET /api/play-token`
+Implemented in [`src/bunny.js`](src/bunny.js); served by `GET /play-token`
 in [`src/server.js`](src/server.js). If you disable Token Authentication in the
 dashboard the page still works; once you **enable** it, only the signed URL
 loads and a raw embed URL returns `403`.
@@ -83,7 +83,7 @@ loads and a raw embed URL returns `403`.
 - **Storage:** every event is appended to `logs/webhooks.jsonl` (file system)
   **and** inserted into `logs/webhooks.db` (SQLite, via Node's built-in
   `node:sqlite` when available). See [`src/store.js`](src/store.js).
-- **Viewer:** the demo page shows a live feed; raw JSON at `GET /api/webhooks`.
+- **Viewer:** the demo page shows a live feed; raw JSON at `GET /webhooks`.
 
 Bunny sends a JSON body like `{ "VideoLibraryId": 759, "VideoGuid": "...",
 "Status": 4 }`. Status `4` = **Finished / encoded**, `3` = transcoding, `5` =
@@ -118,11 +118,33 @@ The "URL where I click a button to request the video" can be:
 
 - **Local + tunnel** (fastest): `npm start`, then
   `npx localtunnel --port 3000` and share the HTTPS URL.
+- **Vercel** (included): push to GitHub and import the repo. The app is wired
+  for Vercel serverless via `api/index.js` + `vercel.json` (do **not** rely on
+  `npm start` on Vercel).
 - **Any Node host** (Render, Railway, Fly.io, a VPS): deploy this repo, set the
   same env vars, and run `npm start`.
 
 Whichever domain you host on, add it to Bunny's **HTTP referrer whitelist**
 (see below) so playback is allowed there.
+
+### Deploy on Vercel
+
+1. Import the GitHub repo in the [Vercel dashboard](https://vercel.com/new).
+2. **Project → Settings → Environment Variables** — add every variable from
+   `.env.example` (`.env` is not deployed; without these, `/play-token`
+   returns 500 and the config banner stays visible):
+   - `BUNNY_LIBRARY_ID`
+   - `BUNNY_VIDEO_ID`
+   - `BUNNY_TOKEN_SECURITY_KEY`
+   - `TOKEN_TTL_SECONDS` (optional, default `120`)
+   - `WEBHOOK_SHARED_SECRET` (optional)
+3. Redeploy after saving env vars.
+4. Set Bunny **Allowed Referrers** to your `*.vercel.app` URL (and custom domain
+   if you add one).
+5. Bunny webhook URL: `https://<your-app>.vercel.app/webhook`
+
+Webhook logs on Vercel use `/tmp` (ephemeral per instance); for durable logs use
+Railway/Render or an external store.
 
 ---
 
@@ -183,7 +205,7 @@ Do them in your own account, then capture them in the demo video.
 
 ```
 src/
-  server.js   Express app: /api/play-token, /webhook, /api/webhooks, static site
+  server.js   Express app: /play-token, /webhook, /webhooks, static site
   bunny.js    Signed embed-URL / token generation
   store.js    Webhook persistence (file system JSONL + SQLite)
 public/

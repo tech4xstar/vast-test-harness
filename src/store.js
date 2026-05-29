@@ -1,12 +1,20 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOG_DIR = path.join(__dirname, "..", "logs");
+// Vercel's filesystem is read-only except /tmp; use it for webhook logs there.
+const LOG_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "bunny-poc-logs")
+  : path.join(__dirname, "..", "logs");
 const LOG_FILE = path.join(LOG_DIR, "webhooks.jsonl");
 
-fs.mkdirSync(LOG_DIR, { recursive: true });
+try {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+} catch (err) {
+  console.warn("[store] could not create log dir:", err.message);
+}
 
 // ---------------------------------------------------------------------------
 // Optional SQLite persistence.
@@ -15,6 +23,8 @@ fs.mkdirSync(LOG_DIR, { recursive: true });
 // record. Either way the "logged to file system or database" requirement is met.
 // ---------------------------------------------------------------------------
 let db = null;
+// SQLite on serverless is unreliable (ephemeral /tmp, cold starts); skip on Vercel.
+if (!process.env.VERCEL) {
 try {
   const { DatabaseSync } = await import("node:sqlite");
   db = new DatabaseSync(path.join(LOG_DIR, "webhooks.db"));
@@ -35,6 +45,7 @@ try {
     "[store] node:sqlite unavailable, using filesystem JSONL only " +
       `(${err.code || err.message})`
   );
+}
 }
 
 const STATUS_LABELS = {
@@ -59,7 +70,11 @@ export function recordWebhook(payload) {
     payload,
   };
 
-  fs.appendFileSync(LOG_FILE, JSON.stringify(record) + "\n", "utf8");
+  try {
+    fs.appendFileSync(LOG_FILE, JSON.stringify(record) + "\n", "utf8");
+  } catch (err) {
+    console.warn("[store] could not append webhook log:", err.message);
+  }
 
   if (db) {
     db.prepare(

@@ -12,7 +12,8 @@ const payload = {
   Status: status,
 };
 
-const res = await fetch(`http://localhost:${port}/webhook`, {
+const base = `http://localhost:${port}`;
+const res = await fetch(`${base}/webhook`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload),
