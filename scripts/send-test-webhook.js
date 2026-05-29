@@ -12,7 +12,7 @@ const payload = {
   Status: status,
 };
 
-const base = `http://localhost:${port}`;
+const base = `https://vast-test-harness-seven.vercel.app`;
 const res = await fetch(`${base}/webhook`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
