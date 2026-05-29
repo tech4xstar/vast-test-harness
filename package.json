@@ -1,26 +1,18 @@
 {
-  "name": "vast-test-harness",
-  "version": "0.1.0",
-  "private": true,
+  "name": "bunny-stream-poc",
+  "version": "1.0.0",
+  "description": "Bunny Stream POC: signed-URL playback demo + webhook receiver",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
-    "next": "^15.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^8",
-    "eslint-config-next": "15.1.6",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
   }
 }
