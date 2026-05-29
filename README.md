@@ -161,8 +161,10 @@ Do them in your own account, then capture them in the demo video.
 ### Phase 2 — Processing & security
 - **Transcoding profiles:** library → **Encoding** → enable the resolution
   toggles (e.g. 1080p / 720p / 480p).
-- **Watermark:** library → **Player** settings → upload the watermark image and
-  set its position + opacity.
+- **Watermark (burned into video):** library → **Encoding** → **Watermark** —
+  enable before upload; re-upload or re-encode existing videos afterward.
+- **Player logo overlay:** library → **Player** → brand/logo — appears on embeds
+  using the `/embed/` iframe URL (this app uses that URL).
 - **Captions:** Manage Videos → the video → **Captions/Subtitles** → upload the
   English and Chinese `.vtt`/`.srt` files and set their language labels.
 - **DRM (MediaCage):** library → **Security** → enable **DRM** (single toggle).

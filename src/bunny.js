@@ -7,6 +7,7 @@ import crypto from "node:crypto";
  *   token = SHA256_HEX(token_security_key + video_id + expiration)
  * and the secure iframe URL is:
  *   https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}?token=...&expires=...
+ * Use /embed/ (not /play/) so library Player settings (logo, colors, etc.) apply.
  *
  * The token security key is the "Token Authentication Key" from the Stream
  * library security settings and must stay server-side.
@@ -32,7 +33,7 @@ export function buildSignedEmbedUrl({
   const token = generateEmbedToken({ securityKey, videoId, expires });
 
   const url = new URL(
-    `https://player.mediadelivery.net/play/${libraryId}/${videoId}`
+    `https://player.mediadelivery.net/play/${libraryId}/${videoId}`ss
   );
   url.searchParams.set("token", token);
   url.searchParams.set("expires", String(expires));
