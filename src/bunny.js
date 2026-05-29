@@ -33,7 +33,7 @@ export function buildSignedEmbedUrl({
   const token = generateEmbedToken({ securityKey, videoId, expires });
 
   const url = new URL(
-    `https://player.mediadelivery.net/play/${libraryId}/${videoId}`ss
+    `https://player.mediadelivery.net/play/${libraryId}/${videoId}`
   );
   url.searchParams.set("token", token);
   url.searchParams.set("expires", String(expires));
